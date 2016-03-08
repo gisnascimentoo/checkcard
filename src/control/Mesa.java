@@ -128,4 +128,8 @@ public class Mesa implements Jogada {
 	public boolean isCartaLancadaChecandoComCartaCheck (Carta carta) {
 		return carta.getNumero() == cartaCheck.getNumero();
 	}
+
+	public boolean verificarMaoJogadorParaComprar(Jogador jogador) {
+		return jogador.getCartasMao().size() < 5;
+	}
 }

@@ -40,5 +40,4 @@ public class AtorJogador {
 	public boolean jogarCarta(Carta carta) {
 		return controladorMesa.jogarCarta(carta);
 	}
-	
 }

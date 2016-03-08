@@ -6,6 +6,7 @@ import java.util.List;
 import br.ufsc.inf.leobr.cliente.Jogada;
 import model.Carta;
 import model.Jogador;
+import model.Lance;
 import rede.AtorNetGames;
 import view.JMesa;
 
@@ -85,7 +86,7 @@ public class ControladorMesa {
 	}
 
 	public void atualizarVisibilidadeTela(int mode) {
-		
+		//TODO
 	}
 
 	public void iniciarPartida() {
@@ -108,11 +109,32 @@ public class ControladorMesa {
 	}
 
 	public void receberJogada(Jogada jogada) {
-		// TODO Auto-generated method stub
+		Carta carta = null;
+        Lance lance = null;
+        
+        if (jogada instanceof Mesa) {
+            this.mesa = (Mesa) jogada;
+            this.setJogadorAtualIniciarPartida(mesa);
+            interfaceMesa.recebeMesa(mesa);
+        } else if (jogada instanceof Carta) {
+        	
+        } else if (jogada instanceof Lance) {
+        	
+        }
+ 	}
+
+	private void setJogadorAtualIniciarPartida(Mesa mesa) {
+		if (mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
+            for (Jogador jog : mesa.getJogadores()) {
+                if (jog.getNome().equals(jogadorAtual.getNome())) {
+                    jogadorAtual = jog;
+                }
+            }
+        } 
 	}
 
-	public void limpaTodosCampos() {
-		// TODO Auto-generated method stub
+	public void limparTodosCampos() {
+		this.interfaceMesa.limparTodosCampos();
 	}
 
 	public void exibeMensagem(String message) {
@@ -122,24 +144,56 @@ public class ControladorMesa {
 	public boolean comprarCarta(Jogador jogador) {
 		boolean retorno = false;
 		
-//		if (algo) {
-			Carta carta = this.mesa.compraCarta();
-			retorno = true;
-			this.enviarJogada(carta);
-			
-			this.receberJogada(carta);
-//		}
+		if (this.tratarPossibilidadeJogada()) {
+			if (tratarPossibilidadeComprarCarta(jogador)) {
+				Carta carta = this.mesa.compraCarta();
+				
+				retorno = true;
+				
+				this.enviarJogada(carta);
+				this.receberJogada(carta);
+			} else {
+				this.exibeMensagem("Você atingiu o limite cartas.");
+			}
+		} else {
+			this.exibeMensagem("Espere a sua vez.");
+		}
 		
 		return retorno;
+	}
+	
+	public boolean jogarCarta(Carta carta) {
+		boolean retorno = false;
+		
+		if (this.tratarPossibilidadeJogada()) {
+			Lance lance = new Lance();
+			lance.setJogador(jogadorAtual);
+			lance.setCarta(carta);
+			
+			retorno = true;
+			
+			this.enviarJogada(lance);
+			this.receberJogada(lance);
+		} else {
+			this.exibeMensagem("Espere a sua vez.");
+		}
+		
+		return retorno;
+	}
+
+	private boolean tratarPossibilidadeComprarCarta(Jogador jogador) {
+		return mesa.verificarMaoJogadorParaComprar(jogador) && !(mesa.isBaralhoVazio());
+	}
+
+	private boolean tratarPossibilidadeJogada() {
+		return this.isVezJogador(jogadorAtual) && this.isConectado();
+	}
+
+	private boolean isVezJogador(Jogador jogador) {
+		return jogador.getNome().equals(this.mesa.getJogadorDaVez().getNome());
 	}
 
 	public void enviarJogada(Jogada jogada) {
 		this.rede.enviarJogada(jogada);
 	}
-
-	public boolean jogarCarta(Carta carta) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

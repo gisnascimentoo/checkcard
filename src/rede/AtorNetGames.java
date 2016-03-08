@@ -48,6 +48,7 @@ public class AtorNetGames implements OuvidorProxy {
 			proxy.desconectar();
 		} catch (NaoConectadoException e) {
 			controladorMesa.exibeMensagem(e.getMessage());
+			//TODO
 			//setarNaoConectadoNoControlador
 		}
 	}
@@ -94,7 +95,7 @@ public class AtorNetGames implements OuvidorProxy {
 	@Override
 	public void finalizarPartidaComErro(String message) {
 		controladorMesa.exibeMensagem(message);
-		controladorMesa.limpaTodosCampos();
+		controladorMesa.limparTodosCampos();
 	}
 
 	@Override
