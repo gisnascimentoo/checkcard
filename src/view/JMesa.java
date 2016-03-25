@@ -47,7 +47,7 @@ public class JMesa {
 	public void recebeMesa(Mesa mesa) {
 		// TODO Auto-generated method stub
 		
-	};
+	}
 	
 	public class ClickCarta extends MouseAdapter {
 
@@ -63,6 +63,4 @@ public class JMesa {
             clicouCarta(carta, me.getComponent());
         }
     }
-
-
 }
