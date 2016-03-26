@@ -28,4 +28,12 @@ public class Rodada implements Jogada {
 		
 		this.lances.add(lance);
 	}
+	
+	public int getQuantidadeLances() {
+		if (this.lances == null) {
+			this.lances = new ArrayList<Lance>(); 
+		}
+		
+		return this.lances.size();
+	}
 }

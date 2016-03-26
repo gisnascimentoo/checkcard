@@ -6,6 +6,7 @@ public class Lance implements Jogada {
 
 	protected Carta carta;
 	protected Jogador jogador;
+	protected TipoLance tipoLance;
 
 	public Lance(Carta carta, Jogador jogador) {
 		super();
@@ -15,6 +16,11 @@ public class Lance implements Jogada {
 
 	public Lance() {
 		super();
+	}
+	
+	public enum TipoLance {
+		COMPRAR_CARTA,
+		JOGAR_CARTA
 	}
 
 	public Carta getCarta() {
@@ -31,5 +37,13 @@ public class Lance implements Jogada {
 
 	public void setJogador(Jogador jogador) {
 		this.jogador = jogador;
+	}
+	
+	public TipoLance getTipoLance() {
+		return tipoLance;
+	}
+	
+	public void setTipoLance(TipoLance tipoLance) {
+		this.tipoLance = tipoLance;
 	}
 }

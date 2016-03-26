@@ -9,6 +9,7 @@ import java.util.List;
 import model.Carta;
 import model.Baralho;
 import model.Jogador;
+import model.Lance;
 import model.Rodada;
 
 public class Mesa implements Jogada {
@@ -95,41 +96,53 @@ public class Mesa implements Jogada {
 	/**END: Getters e setters*/
 
 	public void embaralhaBaralho () {
-		Collections.shuffle(this.getBaralho().getCartas());
+		Collections.shuffle(this.baralho.getCartas());
+	}
+	
+	public Carta compraCartaBaralho () {
+		return this.getBaralho().getCartaRandom();
+	}
+	
+	public boolean isBaralhoVazio () {
+		return this.baralho.getCartas().isEmpty();
+	}
+	
+	public void criaCartaCheck () {
+		this.setCartaCheck(this.baralho.getCartaRandom());
 	}
 	
 	public List<Carta> distribuiCartas () {
 		List<Carta> cartas = new ArrayList<Carta>();
 		
 		for (int i = 0; i < 5; i++) {
-			cartas.add(this.getBaralho().getCartaRandom());
+			cartas.add(this.baralho.getCartaRandom());
 		}
 		
 		return cartas;
 	}
 	
 	public void distribuiCartasParaJogadores () {
-		this.getJogadorUm().setCartasMao(this.distribuiCartas());
-		this.getJogadorDois().setCartasMao(this.distribuiCartas());
-	}
-	
-	public Carta compraCarta () {
-		return this.getBaralho().getCartaRandom();
-	}
-	
-	public boolean isBaralhoVazio () {
-		return this.getBaralho().getCartas().isEmpty();
-	}
-	
-	public void criaCartaCheck () {
-		this.setCartaCheck(this.getBaralho().getCartaRandom());
-	}
-	
-	public boolean isCartaLancadaChecandoComCartaCheck (Carta carta) {
-		return carta.getNumero() == cartaCheck.getNumero();
+		this.jogadorUm.setCartasMao(this.distribuiCartas());
+		this.jogadorDois.setCartasMao(this.distribuiCartas());
 	}
 
 	public boolean verificarMaoJogadorParaComprar(Jogador jogador) {
 		return jogador.getCartasMao().size() < 5;
+	}
+
+	public void removeCartaBaralho(Carta carta) {
+		// TODO Auto-generated method stub
+	}
+
+	public void adicionaCartaMaoJogador(Lance lance) {
+		// TODO Auto-generated method stub
+	}
+
+	public void removeCartaMaoJogador(Lance lance) {
+		// TODO Auto-generated method stub
+	}
+
+	public void addLance(Lance lance) {
+		// TODO Auto-generated method stub
 	}
 }

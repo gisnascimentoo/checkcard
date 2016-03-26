@@ -86,7 +86,7 @@ public class ControladorMesa {
 	}
 
 	public void atualizarVisibilidadeTela(int mode) {
-		//TODO
+		this.interfaceMesa.atualizarVisibilidadeTela(mode);
 	}
 
 	public void iniciarPartida() {
@@ -109,28 +109,32 @@ public class ControladorMesa {
 	}
 
 	public void receberJogada(Jogada jogada) {
+		Jogador jogando = this.getMesa().getJogadorDaVez();
 		Carta carta = null;
         Lance lance = null;
         
         if (jogada instanceof Mesa) {
             this.mesa = (Mesa) jogada;
             this.setJogadorAtualIniciarPartida(mesa);
-            interfaceMesa.recebeMesa(mesa);
-        } else if (jogada instanceof Carta) {
-        	
+            this.interfaceMesa.recebeMesa(mesa);
         } else if (jogada instanceof Lance) {
-        	
+        	lance = (Lance) jogada;
+        	if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
+	        	this.mesa.removeCartaBaralho(lance.getCarta());
+	        	this.mesa.adicionaCartaMaoJogador(lance);
+        	} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
+        		this.mesa.removeCartaMaoJogador(lance);
+        	}
+        	this.alterarJogadorDaVezNaMesa(jogando);
+            this.interfaceMesa.atualizaJogadorDaVez(mesa);
+            this.interfaceMesa.recebeLance(lance);
+            this.mesa.addLance(lance);
+        	this.verificarFimDaRodada();
         }
  	}
 
-	private void setJogadorAtualIniciarPartida(Mesa mesa) {
-		if (mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
-            for (Jogador jog : mesa.getJogadores()) {
-                if (jog.getNome().equals(jogadorAtual.getNome())) {
-                    jogadorAtual = jog;
-                }
-            }
-        } 
+	public void enviarJogada(Jogada jogada) {
+		this.rede.enviarJogada(jogada);
 	}
 
 	public void limparTodosCampos() {
@@ -146,12 +150,15 @@ public class ControladorMesa {
 		
 		if (this.tratarPossibilidadeJogada()) {
 			if (tratarPossibilidadeComprarCarta(jogador)) {
-				Carta carta = this.mesa.compraCarta();
+				Lance lance = new Lance();
+				lance.setJogador(jogadorAtual);
+				lance.setCarta(this.mesa.compraCartaBaralho());
+				lance.setTipoLance(Lance.TipoLance.COMPRAR_CARTA);
 				
 				retorno = true;
 				
-				this.enviarJogada(carta);
-				this.receberJogada(carta);
+				this.enviarJogada(lance);
+				this.receberJogada(lance);
 			} else {
 				this.exibeMensagem("Você atingiu o limite cartas.");
 			}
@@ -169,6 +176,7 @@ public class ControladorMesa {
 			Lance lance = new Lance();
 			lance.setJogador(jogadorAtual);
 			lance.setCarta(carta);
+			lance.setTipoLance(Lance.TipoLance.JOGAR_CARTA);
 			
 			retorno = true;
 			
@@ -179,6 +187,28 @@ public class ControladorMesa {
 		}
 		
 		return retorno;
+	}
+	
+	private void setJogadorAtualIniciarPartida(Mesa mesa) {
+		if (this.mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
+            for (Jogador jog : mesa.getJogadores()) {
+                if (jog.getNome().equals(jogadorAtual.getNome())) {
+                    jogadorAtual = jog;
+                }
+            }
+        } 
+	}
+
+	private void verificarFimDaRodada() {
+		//pontuacoes aqui
+	}
+
+	private void alterarJogadorDaVezNaMesa(Jogador jogador) {
+		if (this.mesa.getJogadorUm().getNome().equals(jogador.getNome())) {
+			this.mesa.setJogadorDaVez(this.mesa.getJogadorDois());
+		} else {
+			this.mesa.setJogadorDaVez(this.mesa.getJogadorUm());
+		}
 	}
 
 	private boolean tratarPossibilidadeComprarCarta(Jogador jogador) {
@@ -192,8 +222,13 @@ public class ControladorMesa {
 	private boolean isVezJogador(Jogador jogador) {
 		return jogador.getNome().equals(this.mesa.getJogadorDaVez().getNome());
 	}
-
-	public void enviarJogada(Jogada jogada) {
-		this.rede.enviarJogada(jogada);
+	
+	private int compararCartaComCheckCard (Carta carta) {
+		if (carta.getNumero() == this.mesa.getCartaCheck().getNumero() || carta.getNaipe() == this.mesa.getCartaCheck().getNaipe()) {
+			return 2;
+		} else if (carta.getNumero() == this.mesa.getCartaCheck().getNumero() && carta.getNaipe() == this.mesa.getCartaCheck().getNaipe()) {
+			return 5;
+		}
+		return 0;
 	}
 }

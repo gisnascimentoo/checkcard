@@ -9,23 +9,36 @@ import javax.swing.JOptionPane;
 import control.Mesa;
 import model.Carta;
 import model.Jogador;
+import model.Lance;
 
 public class JMesa {
 
 	protected AtorJogador atorJogador;
 	
 	public JMesa () {
-		atorJogador = new AtorJogador(this);
+		this.atorJogador = new AtorJogador(this);
 	}
 	
 	public void clicouBaralho (Jogador jogador) {
-		if (atorJogador.comprarCarta(jogador)) 
+		if (this.atorJogador.comprarCarta(jogador)) 
 			this.atualizarCartasJogadorAtual(jogador);
 	}
 
 	public void clicouCarta (Carta carta, Component comp) {
-		if (atorJogador.jogarCarta(carta)) 
+		if (this.atorJogador.jogarCarta(carta)) 
 			this.atualizarPanelJogador(comp);
+	}
+	
+	public void recebeLance(Lance lance) {
+		// TODO Auto-generated method stub
+	}
+	
+	public void atualizaJogadorDaVez(Mesa mesa) {
+		// TODO Auto-generated method stub
+	}
+	
+	public void atualizarVisibilidadeTela(int mode) {
+		// TODO Auto-generated method stub
 	}
 	
 	private void atualizarPanelJogador(Component comp) {
@@ -46,7 +59,6 @@ public class JMesa {
 	
 	public void recebeMesa(Mesa mesa) {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	public class ClickCarta extends MouseAdapter {
