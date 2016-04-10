@@ -1,13 +1,14 @@
 package control;
 
-import br.ufsc.inf.leobr.cliente.Jogada;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import model.Carta;
+import com.sun.org.apache.xalan.internal.utils.Objects;
+
+import br.ufsc.inf.leobr.cliente.Jogada;
 import model.Baralho;
+import model.Carta;
 import model.Jogador;
 import model.Lance;
 import model.Rodada;
@@ -100,7 +101,7 @@ public class Mesa implements Jogada {
 	}
 	
 	public Carta compraCartaBaralho () {
-		return this.getBaralho().getCartaRandom();
+		return this.baralho.getCartaRandom();
 	}
 	
 	public boolean isBaralhoVazio () {
@@ -131,16 +132,16 @@ public class Mesa implements Jogada {
 	}
 
 	public void removeCartaBaralho(Carta carta) {
-		// TODO Auto-generated method stub
+		this.baralho.getCartas().remove(carta);
 	}
 
 	public void adicionaCartaMaoJogador(Lance lance) {
-		// TODO Auto-generated method stub
+		lance.getJogador().getCartasMao().add(lance.getCarta());
 	}
 
 	public void removeCartaMaoJogador(Lance lance) {
-		// TODO Auto-generated method stub
-	}
+		lance.getJogador().getCartasMao().remove(lance.getCarta());
+    }
 
 	public void addLance(Lance lance) {
 		// TODO Auto-generated method stub

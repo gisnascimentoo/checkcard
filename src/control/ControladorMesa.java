@@ -11,13 +11,13 @@ import rede.AtorNetGames;
 import view.JMesa;
 
 public class ControladorMesa {
-	
+
 	protected Jogador jogadorAtual;
 	protected Mesa mesa;
 	protected AtorNetGames rede;
 	protected JMesa interfaceMesa;
 	protected boolean conectado;
-	
+
 	public ControladorMesa (JMesa jMesa) {
 		this.rede = new AtorNetGames(this);
 		this.mesa = new Mesa();
@@ -63,11 +63,11 @@ public class ControladorMesa {
 	public void setConectado(boolean conectado) {
 		this.conectado = conectado;
 	}
-	
+
 	public void criarJogadorAtual(String nome) {
 		this.jogadorAtual = new Jogador(nome);
 	}
-	
+
 	public boolean conectarRede(String nome, String servidor) {
 		boolean retorno = this.rede.conectar(nome, servidor);
 		this.conectado = retorno;
@@ -76,7 +76,7 @@ public class ControladorMesa {
 		}
 		return retorno;
 	}
-	
+
 	public void desconectarRede() {
 		if (this.conectado) {
 			this.rede.desconectar();
@@ -91,19 +91,19 @@ public class ControladorMesa {
 
 	public void iniciarPartida() {
 		this.rede.iniciarPartida();
-		
+
 		List<Jogador> jogadores = this.rede.getJogadores();
-		
+
 		if (jogadores.size() == 2) {
 			this.mesa.setJogadores(jogadores);
 			this.criarJogadores(jogadores);
 		}
 	}
-	
+
 	public void criarJogadores(List<Jogador> jogadores) {
 		this.mesa.setJogadorUm(jogadores.get(0));
 		this.mesa.getJogadorUm().setId(1);
-		
+
 		this.mesa.setJogadorDois(jogadores.get(1));
 		this.mesa.getJogadorDois().setId(2);
 	}
@@ -112,7 +112,7 @@ public class ControladorMesa {
 		Jogador jogando = this.getMesa().getJogadorDaVez();
 		Carta carta = null;
         Lance lance = null;
-        
+
         if (jogada instanceof Mesa) {
             this.mesa = (Mesa) jogada;
             this.setJogadorAtualIniciarPartida(mesa);
@@ -147,16 +147,16 @@ public class ControladorMesa {
 
 	public boolean comprarCarta(Jogador jogador) {
 		boolean retorno = false;
-		
+
 		if (this.tratarPossibilidadeJogada()) {
 			if (tratarPossibilidadeComprarCarta(jogador)) {
 				Lance lance = new Lance();
-				lance.setJogador(jogadorAtual);
+				lance.setJogador(jogador);
 				lance.setCarta(this.mesa.compraCartaBaralho());
 				lance.setTipoLance(Lance.TipoLance.COMPRAR_CARTA);
-				
+
 				retorno = true;
-				
+
 				this.enviarJogada(lance);
 				this.receberJogada(lance);
 			} else {
@@ -165,30 +165,30 @@ public class ControladorMesa {
 		} else {
 			this.exibeMensagem("Espere a sua vez.");
 		}
-		
+
 		return retorno;
 	}
-	
+
 	public boolean jogarCarta(Carta carta) {
 		boolean retorno = false;
-		
+
 		if (this.tratarPossibilidadeJogada()) {
 			Lance lance = new Lance();
-			lance.setJogador(jogadorAtual);
+			lance.setJogador(this.mesa.getJogadorDaVez());
 			lance.setCarta(carta);
 			lance.setTipoLance(Lance.TipoLance.JOGAR_CARTA);
-			
+
 			retorno = true;
-			
+
 			this.enviarJogada(lance);
 			this.receberJogada(lance);
 		} else {
 			this.exibeMensagem("Espere a sua vez.");
 		}
-		
+
 		return retorno;
 	}
-	
+
 	private void setJogadorAtualIniciarPartida(Mesa mesa) {
 		if (this.mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
             for (Jogador jog : mesa.getJogadores()) {
@@ -196,7 +196,7 @@ public class ControladorMesa {
                     jogadorAtual = jog;
                 }
             }
-        } 
+        }
 	}
 
 	private void verificarFimDaRodada() {
@@ -222,7 +222,7 @@ public class ControladorMesa {
 	private boolean isVezJogador(Jogador jogador) {
 		return jogador.getNome().equals(this.mesa.getJogadorDaVez().getNome());
 	}
-	
+
 	private int compararCartaComCheckCard (Carta carta) {
 		if (carta.getNumero() == this.mesa.getCartaCheck().getNumero() || carta.getNaipe() == this.mesa.getCartaCheck().getNaipe()) {
 			return 2;

@@ -14,12 +14,12 @@ public class Carta implements Jogada {
 	protected Cor cor;
 	protected ImageIcon imagem;
 
-	public Carta(int numero, Naipe naipe, Cor cor/*, ImageIcon imagem */) {
+	public Carta(int numero, Naipe naipe, Cor cor, ImageIcon imagem) {
 		super();
 		this.numero = numero;
 		this.naipe = naipe;
 		this.cor = cor;
-//		this.imagem = imagem;
+		this.imagem = imagem;
 	}
 
 	public int getNumero() {
