@@ -61,6 +61,11 @@ public class JMesa {
 		// TODO Auto-generated method stub
 	}
 	
+	public void atualizarPontosJogadores() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public class ClickCarta extends MouseAdapter {
 
         private Carta carta;

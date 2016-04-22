@@ -22,10 +22,10 @@ public class Rodada implements Jogada {
 	}
 	
 	public void addLance (Lance lance) {
-		if (this.lances.isEmpty()) {
-			this.lances = new ArrayList<Lance>();
-		}
-		
+//		if (this.lances.isEmpty()) {
+//			this.lances = new ArrayList<Lance>();
+//		}
+//		
 		this.lances.add(lance);
 	}
 	

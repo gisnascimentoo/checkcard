@@ -97,7 +97,20 @@ public class ControladorMesa {
 		if (jogadores.size() == 2) {
 			this.mesa.setJogadores(jogadores);
 			this.criarJogadores(jogadores);
+			
+			this.iniciarNovaPartida();
 		}
+	}
+
+	private void iniciarNovaPartida() {
+		this.mesa.embaralhaBaralho();
+		this.mesa.distribuiCartasParaJogadores();
+		this.mesa.criaCartaCheck();
+		this.mesa.setStatusMesa(StatusMesa.INICAR_PARTIDA);
+		this.mesa.setJogadorDaVez(jogadorAtual);
+		this.mesa.iniciarRodada(jogadorAtual);
+		this.enviarJogada(mesa);
+		this.receberJogada(mesa);
 	}
 
 	public void criarJogadores(List<Jogador> jogadores) {
@@ -160,7 +173,7 @@ public class ControladorMesa {
 				this.enviarJogada(lance);
 				this.receberJogada(lance);
 			} else {
-				this.exibeMensagem("Você atingiu o limite cartas.");
+				this.exibeMensagem("Você atingiu o limite cartas. Você deve descartar alguma delas!");
 			}
 		} else {
 			this.exibeMensagem("Espere a sua vez.");
@@ -190,7 +203,7 @@ public class ControladorMesa {
 	}
 
 	private void setJogadorAtualIniciarPartida(Mesa mesa) {
-		if (this.mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
+		if (mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
             for (Jogador jog : mesa.getJogadores()) {
                 if (jog.getNome().equals(jogadorAtual.getNome())) {
                     jogadorAtual = jog;
@@ -198,9 +211,75 @@ public class ControladorMesa {
             }
         }
 	}
+	
+	public boolean chegouFimDaRodada() {
+        return (this.mesa.getRodadaAtual() != null && this.mesa.getRodadaAtual().getQuantidadeLances() == 2);
+    }
 
 	private void verificarFimDaRodada() {
-		//pontuacoes aqui
+		if (this.chegouFimDaRodada()) {
+			this.computarPontos();
+			this.interfaceMesa.atualizarPontosJogadores();
+			
+			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
+            this.interfaceMesa.recebeMesa(mesa);
+			
+            this.enviarJogada(mesa);
+            this.receberJogada(mesa);
+            
+            this.verificarFimDaPartida();
+		}
+	}
+
+	private void computarPontos() {
+		ArrayList<Lance> lancesDaRodada = new ArrayList<Lance>(this.mesa.getRodadaAtual().getLances());
+		int pontuacao;
+		Carta cartaDoLance;
+		
+		for (Lance lance : lancesDaRodada) {
+			pontuacao = lance.getJogador().getPontuacao();
+			if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
+				lance.getJogador().setPontuacao(pontuacao - 2);
+			} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
+				cartaDoLance = lance.getCarta();
+				if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero() || cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
+					lance.getJogador().setPontuacao(pontuacao + 2);
+				} else if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero() && cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
+					lance.getJogador().setPontuacao(pontuacao + 5);
+				} 
+			}
+		}
+	}
+
+	private void verificarFimDaPartida() {
+		if (this.mesa.acabouPartida()) {
+			ArrayList<Jogador> jogadores = new ArrayList<Jogador>(this.mesa.getJogadores());
+			String vencedor;
+			int pontuacao;
+			boolean empate = false;
+			
+			if (jogadores.get(0).getPontuacao() > jogadores.get(1).getPontuacao()) {
+				vencedor = jogadores.get(0).getNome();
+				pontuacao = jogadores.get(0).getPontuacao();
+			} else if (jogadores.get(0).getPontuacao() < jogadores.get(1).getPontuacao()) {
+				vencedor = jogadores.get(0).getNome();
+				pontuacao = jogadores.get(0).getPontuacao();
+			} else {
+				vencedor = "A partida terminou empatada.";
+				pontuacao = 20;
+				empate = true;
+			}
+			
+			this.exibeFimDeJogoInterface(vencedor, pontuacao, empate);
+		}
+	}
+
+	private void exibeFimDeJogoInterface(String vencedor, int pontuacao, boolean empate) {
+		if (empate == false) {
+			this.exibeMensagem("O jogador vencedor foi: " + vencedor + ", com pontuação: " + pontuacao);
+		} else {
+			this.exibeMensagem(vencedor + "Com pontuação: " + pontuacao);
+		}
 	}
 
 	private void alterarJogadorDaVezNaMesa(Jogador jogador) {
@@ -212,11 +291,11 @@ public class ControladorMesa {
 	}
 
 	private boolean tratarPossibilidadeComprarCarta(Jogador jogador) {
-		return mesa.verificarMaoJogadorParaComprar(jogador) && !(mesa.isBaralhoVazio());
+		return this.mesa.verificarMaoJogadorParaComprar(jogador) && !(this.mesa.isBaralhoVazio());
 	}
 
 	private boolean tratarPossibilidadeJogada() {
-		return this.isVezJogador(jogadorAtual) && this.isConectado();
+		return this.isVezJogador(this.jogadorAtual) && this.isConectado();
 	}
 
 	private boolean isVezJogador(Jogador jogador) {

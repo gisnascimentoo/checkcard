@@ -93,6 +93,14 @@ public class Mesa implements Jogada {
 	public void setCartaCheck(Carta cartaCheck) {
 		this.cartaCheck = cartaCheck;
 	}
+	
+	public Rodada getRodadaAtual() {
+		return this.rodadaAtual;
+	}
+	
+	public void setRodadaAtual(Rodada rodadaAtual) {
+        this.rodadaAtual = rodadaAtual;
+    }
 
 	/**END: Getters e setters*/
 
@@ -144,6 +152,19 @@ public class Mesa implements Jogada {
     }
 
 	public void addLance(Lance lance) {
-		// TODO Auto-generated method stub
+		this.rodadaAtual.addLance(lance);
+	}
+
+	public void iniciarRodada(Jogador jogadorDaVez) {
+		Rodada rodada = new Rodada();
+        this.setRodadaAtual(rodada);
+        this.setJogadorDaVez(jogadorDaVez);
+	}
+
+	public boolean acabouPartida() {
+		for (Jogador jogador : this.jogadores) {
+			return jogador.getPontuacao() >= 20;
+		}
+		return false;
 	}
 }
