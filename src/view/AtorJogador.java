@@ -17,6 +17,14 @@ public class AtorJogador {
 		return controladorMesa;
 	}
 	
+	public Jogador getJogadorAtual() {
+        return controladorMesa.getJogadorAtual();
+    }
+
+    public void setJogadorAtual(Jogador jogador) {
+    	controladorMesa.setJogadorAtual(jogador);
+    }
+	
 	public void setControladorMesa(ControladorMesa controladorMesa) {
 		this.controladorMesa = controladorMesa;
 	}
