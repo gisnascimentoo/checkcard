@@ -219,7 +219,7 @@ public class ControladorMesa {
 	private void verificarFimDaRodada() {
 		if (this.chegouFimDaRodada()) {
 			this.computarPontos();
-			this.interfaceMesa.atualizarPontosJogadores();
+			this.interfaceMesa.atualizarPontosJogadores(mesa);
 			
 			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
             this.interfaceMesa.recebeMesa(mesa);
