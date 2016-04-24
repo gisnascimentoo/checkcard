@@ -204,17 +204,17 @@ public class ControladorMesa {
 
 	private void setJogadorAtualIniciarPartida(Mesa mesa) {
 		if (mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
-            for (Jogador jog : mesa.getJogadores()) {
-                if (jog.getNome().equals(jogadorAtual.getNome())) {
-                    jogadorAtual = jog;
-                }
-            }
-        }
+        		for (Jogador jog : mesa.getJogadores()) {
+                		if (jog.getNome().equals(jogadorAtual.getNome())) {
+                    			jogadorAtual = jog;
+                		}
+            		}
+        	}
 	}
 	
 	public boolean chegouFimDaRodada() {
-        return (this.mesa.getRodadaAtual() != null && this.mesa.getRodadaAtual().getQuantidadeLances() == 2);
-    }
+        	return (this.mesa.getRodadaAtual() != null && this.mesa.getRodadaAtual().getQuantidadeLances() == 2);
+    	}
 
 	private void verificarFimDaRodada() {
 		if (this.chegouFimDaRodada()) {
@@ -222,12 +222,12 @@ public class ControladorMesa {
 			this.interfaceMesa.atualizarPontosJogadores(mesa);
 			
 			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
-            this.interfaceMesa.recebeMesa(mesa);
+            		this.interfaceMesa.recebeMesa(mesa);
 			
-            this.enviarJogada(mesa);
-            this.receberJogada(mesa);
+            		this.enviarJogada(mesa);
+            		this.receberJogada(mesa);
             
-            this.verificarFimDaPartida();
+            		this.verificarFimDaPartida();
 		}
 	}
 

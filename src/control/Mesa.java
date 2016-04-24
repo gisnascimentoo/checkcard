@@ -99,8 +99,8 @@ public class Mesa implements Jogada {
 	}
 	
 	public void setRodadaAtual(Rodada rodadaAtual) {
-        this.rodadaAtual = rodadaAtual;
-    }
+        	this.rodadaAtual = rodadaAtual;
+       }  
 
 	/**END: Getters e setters*/
 
@@ -149,7 +149,7 @@ public class Mesa implements Jogada {
 
 	public void removeCartaMaoJogador(Lance lance) {
 		lance.getJogador().getCartasMao().remove(lance.getCarta());
-    }
+    	}
 
 	public void addLance(Lance lance) {
 		this.rodadaAtual.addLance(lance);
@@ -157,8 +157,8 @@ public class Mesa implements Jogada {
 
 	public void iniciarRodada(Jogador jogadorDaVez) {
 		Rodada rodada = new Rodada();
-        this.setRodadaAtual(rodada);
-        this.setJogadorDaVez(jogadorDaVez);
+		this.setRodadaAtual(rodada);
+		this.setJogadorDaVez(jogadorDaVez);
 	}
 
 	public boolean acabouPartida() {
