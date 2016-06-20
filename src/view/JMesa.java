@@ -18,12 +18,9 @@ import javax.swing.JPanel;
 import model.Carta;
 import model.Jogador;
 import model.Lance;
+import control.Mesa;
 import view.AtorJogador;
 
-/**
- *
- * @author rodolfolottin
- */
 public class JMesa extends javax.swing.JFrame {
     
     protected AtorJogador atorJogador;
@@ -60,8 +57,9 @@ public class JMesa extends javax.swing.JFrame {
 	}
 	
 	public void clicouBaralho (Jogador jogador) {
-		if (this.atorJogador.comprarCarta(jogador)) 
+		if (this.atorJogador.comprarCarta(jogador)) {
 			this.atualizaCartasJogadorAtual(jogador);
+		}
 	}
 
 	public void clicouCarta (Carta carta, Component comp) {
@@ -73,10 +71,15 @@ public class JMesa extends javax.swing.JFrame {
 		Jogador jogadorAtual = atorJogador.getJogadorAtual();
         if (lance.getJogador().getNome().equals(jogadorAtual.getNome())) {
             this.jLabelCartaJogador.setIcon(lance.getCarta().getImage());
+        } else if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
+        	 ImageIcon image = new javax.swing.ImageIcon(getClass().getResource("/images/Atras.png"));
+        	 JLabel label = new JLabel(image);
+        	 jPanelAdversario.add(label);
         } else {
-            this.jLabelCartaAdversario.setIcon(lance.getCarta().getImage());
-            this.removeLabel(jPanelAdversario);
+        	this.jLabelCartaAdversario.setIcon(lance.getCarta().getImage());
+        	this.removeLabel(jPanelAdversario);
         }
+        this.validate();
 	}
 	
 	private void removeLabel(JPanel panel) {
@@ -88,7 +91,7 @@ public class JMesa extends javax.swing.JFrame {
         }
 	}
 
-	public void atualizaJogadorDaVez(control.Mesa mesa) {
+	public void atualizaJogadorDaVez(Mesa mesa) {
 		jLabelTextoJogadorDaVez.setText(mesa.getJogadorDaVez().getNome());
 	}
 	
@@ -121,7 +124,7 @@ public class JMesa extends javax.swing.JFrame {
 	}
 	
 	private void limparCheckCard() {
-        jLabelCheckCard.setIcon(null);
+		jLabelValorCheckCard.setIcon(null);
 	}
 
 	private void limparPanelsCartasJogadores() {
@@ -134,88 +137,104 @@ public class JMesa extends javax.swing.JFrame {
 		jLabelValorJogadorDois.setText("0");
 	}
 
-	private void atualizaCheckCard(control.Mesa mesa) {
+	private void atualizaCheckCard(Mesa mesa) {
         mesa.criaCartaCheck();
-        Carta cartaCheck = mesa.getCartaCheck(); 
-		jLabelCheckCard.setIcon(cartaCheck.getImage());
+        Carta cartaCheck = mesa.getCartaCheck();
+        jLabelValorCheckCard.setIcon(cartaCheck.getImage());
     }
 	
 	private void adicionarTitulo(String nome) {
         this.setTitle(nome);
     }
 	
-	public void recebeMesa(control.Mesa mesa) {
+	public void recebeMesa(Mesa mesa) {
 		if (mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
             this.iniciarPartida(mesa);
             this.setNomeJogadoresLabel(mesa);
             JOptionPane.showMessageDialog(this, "Uma nova partida vai iniciar");
         }  else if (mesa.getStatusMesa().equals(StatusMesa.INICIAR_RODADA)) {
-            this.iniciarPartida(mesa);
+            this.iniciarNovaRodada(mesa);
         } 
         this.atualizaJogadorDaVez(mesa);
         this.validate();
 	}
 	
-	private void setNomeJogadoresLabel(control.Mesa mesa) {
+	private void iniciarNovaRodada(Mesa mesa) {
+		this.atualizaCheckCard(mesa);
+		this.iniciarRodada(mesa);
+	}
+
+	private void setNomeJogadoresLabel(Mesa mesa) {
 		this.jLabelTextoJogadorUm.setText(mesa.getJogadorUm().getNome());
         this.jLabelTextoJogadorDois.setText(mesa.getJogadorDois().getNome());
 	}
 	
-	private void iniciarPartida(control.Mesa mesa) {
+	private void iniciarPartida(Mesa mesa) {
         this.atualizaCamposInicioPartida(mesa);
     }
     
-    private void atualizaCamposInicioPartida(control.Mesa mesa) {
+    private void atualizaCamposInicioPartida(Mesa mesa) {
     	this.limparPanelsCartas();
         
         Jogador jogadorAtual = this.getJogadorAtualNaMesa(mesa);
         
         this.atualizaCartasJogadorAtual(jogadorAtual);
         this.atualizaCartasAdversarios(jogadorAtual);
+        mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
         this.atualizaBaralho(mesa);
         this.iniciarRodada(mesa);
     }
 
-	private void atualizaBaralho(control.Mesa mesa) {
+	private void atualizaBaralho(Mesa mesa) {
 		ImageIcon image = new javax.swing.ImageIcon(getClass().getResource("/images/Atras.png"));
-        image.setImage(image.getImage().getScaledInstance(110, 160, 150));
         jLabelBaralho.setIcon(image);
 	}
 
 	private void atualizaCartasAdversarios(Jogador jogadorAtual) {
-		this.adicionaCartas(jPanelAdversario, true);
+		this.adicionaCartas(jPanelAdversario, true, jogadorAtual);
 	}
 
-	private void adicionaCartas(JPanel jPanelJogador, boolean adversario) {
+	private void adicionaCartas(JPanel jPanelJogador, boolean adversario, Jogador jogadorAtual) {
 		ImageIcon image = null;
-
+		
         if (adversario) {
             image = new javax.swing.ImageIcon(getClass().getResource("/images/Atras.png"));
         } else {
             image = new javax.swing.ImageIcon(getClass().getResource("/images/Atras.png"));
         }
-        image.setImage(image.getImage().getScaledInstance(100, 150, 150));
-        JLabel label = new JLabel(image);
-        jPanelJogador.add(label);
+        
+        jPanelJogador.removeAll();
+        for (Carta carta : jogadorAtual.getCartasMao()) {
+        	JLabel label = new JLabel(image);
+            jPanelJogador.add(label);
+		}
         jPanelJogador.validate();
 	}
 
-	private void atualizaCartasJogadorAtual(Jogador jogadorAtual) {
+	public void atualizaCartasJogadorAtual(Jogador jogadorAtual) {
 		jPanelJogador.removeAll();
-        for (int i = 0; i < jogadorAtual.getCartasMao().size(); i++) {
-            JLabel jlabel = new JLabel(jogadorAtual.getCartasMao().get(i).getImage());
+		Jogador jogador;
+		
+		if (jogadorAtual.getNome().equals(atorJogador.getControladorMesa().getMesa().getJogadorUm().getNome())) {
+			jogador = atorJogador.getControladorMesa().getMesa().getJogadorUm();
+		} else {
+			jogador = atorJogador.getControladorMesa().getMesa().getJogadorDois();
+		}
+		
+        for (int i = 0; i < jogador.getCartasMao().size(); i++) {
+            JLabel jlabel = new JLabel(jogador.getCartasMao().get(i).getImage());
             jlabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            jlabel.addMouseListener(new ClickCarta(jogadorAtual.getCartasMao().get(i)));
+            jlabel.addMouseListener(new ClickCarta(jogador.getCartasMao().get(i)));
             jPanelJogador.add(jlabel);
-            jPanelJogador.validate();
         }
+        jPanelJogador.validate();
 	}
 
 	private void limparPanelsCartas() {
 		jPanelJogador.removeAll();
 		jPanelAdversario.removeAll();
 		jLabelBaralho.setIcon(null);
-        jLabelCheckCard.setIcon(null);
+		jLabelValorCheckCard.setIcon(null);
         jLabelCartaJogador.setIcon(null);
         jLabelCartaAdversario.setIcon(null);
         jPanelAdversario.validate();
@@ -223,7 +242,7 @@ public class JMesa extends javax.swing.JFrame {
         this.validate();
 	}
 
-	private Jogador getJogadorAtualNaMesa(control.Mesa mesa) {
+	private Jogador getJogadorAtualNaMesa(Mesa mesa) {
 		Jogador jogador1 = mesa.getJogadorUm();
         Jogador jogador2 = mesa.getJogadorDois();
         
@@ -234,11 +253,17 @@ public class JMesa extends javax.swing.JFrame {
         }
 	}
 
-	private void iniciarRodada(control.Mesa mesa) {
+	private void iniciarRodada(Mesa mesa) {
+		limparCartasCompartilhadas();
         mesa.iniciarRodada(mesa.getJogadorDaVez());
     }
 
-	public void atualizarPontosJogadores(control.Mesa mesa) {
+	private void limparCartasCompartilhadas() {
+		jLabelCartaJogador.setIcon(null);
+        jLabelCartaAdversario.setIcon(null);
+	}
+
+	public void atualizarPontosJogadores(Mesa mesa) {
 		jLabelValorJogadorUm.setText(mesa.getJogadorUm().getPontuacao() + "");
 		jLabelValorJogadorDois.setText(mesa.getJogadorDois().getPontuacao() + "");
 	}
@@ -256,7 +281,6 @@ public class JMesa extends javax.swing.JFrame {
         jPanelAdversario = new javax.swing.JPanel();
         jPanelJogador = new javax.swing.JPanel();
         jLabelBaralho = new javax.swing.JLabel();
-        jLabelCheckCard = new javax.swing.JLabel();
         jLabelCartaJogador = new javax.swing.JLabel();
         jLabelCartaAdversario = new javax.swing.JLabel();
         jPanelInfos = new javax.swing.JPanel();
@@ -278,14 +302,58 @@ public class JMesa extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanelMesa.setBackground(new java.awt.Color(68, 146, 188));
+        jPanelMesa.setPreferredSize(new java.awt.Dimension(550, 750));
 
         jPanelAdversario.setBackground(new java.awt.Color(68, 146, 188));
         jPanelAdversario.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        jPanelAdversario.setLayout(new java.awt.GridLayout());
+        jPanelAdversario.setLayout(new java.awt.GridLayout(1, 0));
 
         jPanelJogador.setBackground(new java.awt.Color(68, 146, 188));
         jPanelJogador.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        jPanelJogador.setLayout(new java.awt.GridLayout());
+        jPanelJogador.setLayout(new java.awt.GridLayout(1, 0));
+
+        javax.swing.GroupLayout jPanelMesaLayout = new javax.swing.GroupLayout(jPanelMesa);
+        jPanelMesa.setLayout(jPanelMesaLayout);
+        jPanelMesaLayout.setHorizontalGroup(
+            jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelMesaLayout.createSequentialGroup()
+                .addGap(47, 47, 47)
+                .addGroup(jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 835, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 835, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(56, Short.MAX_VALUE))
+            .addGroup(jPanelMesaLayout.createSequentialGroup()
+                .addGroup(jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelMesaLayout.createSequentialGroup()
+                        .addGap(231, 231, 231)
+                        .addComponent(jLabelCartaJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanelMesaLayout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabelCartaAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(143, 143, 143)))
+                .addComponent(jLabelBaralho, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39))
+        );
+        jPanelMesaLayout.setVerticalGroup(
+            jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelMesaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanelAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelMesaLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabelCartaAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabelCartaJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(jPanelMesaLayout.createSequentialGroup()
+                        .addGap(41, 41, 41)
+                        .addComponent(jLabelBaralho, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(jPanelJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(811, 811, 811))
+        );
 
         jLabelTextoPlacar.setText("Placar");
 
@@ -300,12 +368,6 @@ public class JMesa extends javax.swing.JFrame {
         jLabelTextoCheckCard.setText("CheckCard");
 
         jLabelTextoJogadorDaVez.setText("Jogador da vez");
-        
-        jLabelBaralho.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                clicouBaralho(atorJogador.getControladorMesa().getJogadorAtual());
-            }
-        });
 
         javax.swing.GroupLayout jPanelInfosLayout = new javax.swing.GroupLayout(jPanelInfos);
         jPanelInfos.setLayout(jPanelInfosLayout);
@@ -319,100 +381,64 @@ public class JMesa extends javax.swing.JFrame {
                         .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanelInfosLayout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabelTextoPlacar)
-                                .addGap(279, 279, 279)
-                                .addComponent(jLabelTextoCheckCard)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabelTextoJogadorDaVez))
+                                .addComponent(jLabelTextoPlacar))
                             .addGroup(jPanelInfosLayout.createSequentialGroup()
                                 .addGap(68, 68, 68)
-                                .addComponent(jLabelTextoJogadorDois)
-                                .addGap(151, 151, 151)
-                                .addComponent(jLabelValorCheckCard, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 168, Short.MAX_VALUE)
-                                .addComponent(jLabelValorJogadorDaVez, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(jLabelTextoJogadorDois))))
                     .addGroup(jPanelInfosLayout.createSequentialGroup()
                         .addGap(51, 51, 51)
                         .addComponent(jLabelValorJogadorUm)
                         .addGap(119, 119, 119)
                         .addComponent(jLabelValorJogadorDois)))
-                .addGap(140, 140, 140))
+                .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelInfosLayout.createSequentialGroup()
+                        .addGap(172, 172, 172)
+                        .addComponent(jLabelTextoCheckCard))
+                    .addGroup(jPanelInfosLayout.createSequentialGroup()
+                        .addGap(152, 152, 152)
+                        .addComponent(jLabelValorCheckCard, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelTextoJogadorDaVez, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabelValorJogadorDaVez, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(76, 76, 76))
         );
         jPanelInfosLayout.setVerticalGroup(
             jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelInfosLayout.createSequentialGroup()
                 .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelInfosLayout.createSequentialGroup()
-                        .addGap(45, 45, 45)
                         .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabelTextoJogadorUm, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabelTextoJogadorDois))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabelValorJogadorUm)
-                            .addComponent(jLabelValorJogadorDois)))
-                    .addGroup(jPanelInfosLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabelTextoPlacar, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabelTextoCheckCard)
                             .addComponent(jLabelTextoJogadorDaVez))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabelValorCheckCard, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanelInfosLayout.createSequentialGroup()
                         .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanelInfosLayout.createSequentialGroup()
-                                .addGap(24, 24, 24)
-                                .addComponent(jLabelValorCheckCard, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(45, 45, 45)
+                                .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabelTextoJogadorUm, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabelTextoJogadorDois))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanelInfosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelValorJogadorUm)
+                                    .addComponent(jLabelValorJogadorDois)))
                             .addGroup(jPanelInfosLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabelTextoPlacar, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(jLabelValorJogadorDaVez, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(30, Short.MAX_VALUE))
+                                .addComponent(jLabelValorJogadorDaVez, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 26, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-
-        javax.swing.GroupLayout jPanelMesaLayout = new javax.swing.GroupLayout(jPanelMesa);
-        jPanelMesa.setLayout(jPanelMesaLayout);
-        jPanelMesaLayout.setHorizontalGroup(
-            jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelMesaLayout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addComponent(jLabelCheckCard, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabelBaralho, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelMesaLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabelCartaAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(365, 365, 365))
-            .addGroup(jPanelMesaLayout.createSequentialGroup()
-                .addGroup(jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanelMesaLayout.createSequentialGroup()
-                        .addGap(65, 65, 65)
-                        .addGroup(jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPanelAdversario, javax.swing.GroupLayout.DEFAULT_SIZE, 835, Short.MAX_VALUE)
-                            .addComponent(jPanelJogador, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanelMesaLayout.createSequentialGroup()
-                        .addGap(365, 365, 365)
-                        .addComponent(jLabelCartaJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jPanelInfos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanelMesaLayout.setVerticalGroup(
-            jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelMesaLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jPanelAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabelCartaAdversario, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
-                .addGroup(jPanelMesaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabelBaralho, javax.swing.GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE)
-                    .addComponent(jLabelCheckCard, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 68, Short.MAX_VALUE)
-                .addComponent(jLabelCartaJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(51, 51, 51)
-                .addComponent(jPanelJogador, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
-                .addComponent(jPanelInfos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
+        
+        jLabelBaralho.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                clicouBaralho(atorJogador.getControladorMesa().getJogadorAtual());
+            }
+        });
+        
         jMenu.setText("Menu");
 
         jMenuItemConectar.setText("Conectar");
@@ -447,13 +473,16 @@ public class JMesa extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelMesa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanelMesa, javax.swing.GroupLayout.DEFAULT_SIZE, 938, Short.MAX_VALUE)
+            .addComponent(jPanelInfos, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanelMesa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jPanelMesa, javax.swing.GroupLayout.PREFERRED_SIZE, 571, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanelInfos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -525,7 +554,6 @@ public class JMesa extends javax.swing.JFrame {
     private javax.swing.JLabel jLabelBaralho;
     private javax.swing.JLabel jLabelCartaAdversario;
     private javax.swing.JLabel jLabelCartaJogador;
-    private javax.swing.JLabel jLabelCheckCard;
     private javax.swing.JLabel jLabelTextoCheckCard;
     private javax.swing.JLabel jLabelTextoJogadorDaVez;
     private javax.swing.JLabel jLabelTextoJogadorDois;
