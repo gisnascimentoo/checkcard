@@ -25,8 +25,8 @@ public class Mesa implements Jogada {
 	protected Carta cartaCheck;
 	protected List<Rodada> rodadas;
 	protected Rodada rodadaAtual;
-	
-	public Mesa () {
+
+	public Mesa() {
 		this.baralho = new Baralho();
 	}
 
@@ -37,12 +37,12 @@ public class Mesa implements Jogada {
 	public void setStatusMesa(StatusMesa statusMesa) {
 		this.statusMesa = statusMesa;
 	}
-	
-	public List<Jogador> getJogadores () {
+
+	public List<Jogador> getJogadores() {
 		return this.jogadores;
 	}
-	
-	public void setJogadores (List<Jogador> novosJogadores) {
+
+	public void setJogadores(List<Jogador> novosJogadores) {
 		this.jogadores = novosJogadores;
 	}
 
@@ -61,7 +61,7 @@ public class Mesa implements Jogada {
 	public void setJogadorDois(Jogador jogadorDois) {
 		this.jogadorDois = jogadorDois;
 	}
-	
+
 	public Jogador getJogadorVencedor() {
 		return jogadorVencedor;
 	}
@@ -85,7 +85,7 @@ public class Mesa implements Jogada {
 	public void setBaralho(Baralho baralho) {
 		this.baralho = baralho;
 	}
-	
+
 	public Carta getCartaCheck() {
 		return cartaCheck;
 	}
@@ -93,63 +93,117 @@ public class Mesa implements Jogada {
 	public void setCartaCheck(Carta cartaCheck) {
 		this.cartaCheck = cartaCheck;
 	}
-	
+
 	public Rodada getRodadaAtual() {
 		return this.rodadaAtual;
 	}
-	
+
 	public void setRodadaAtual(Rodada rodadaAtual) {
-        	this.rodadaAtual = rodadaAtual;
-       }  
+		this.rodadaAtual = rodadaAtual;
+	}
 
-	/**END: Getters e setters*/
+	/** END: Getters e setters */
+	
 
-	public void embaralhaBaralho () {
+	public void criarJogadores() {
+		jogadorUm = jogadores.get(0);
+        jogadorUm.setId(1);
+       
+        jogadorDois = jogadores.get(1);
+        jogadorDois.setId(2);
+	}
+	
+	public void embaralhaBaralho() {
 		Collections.shuffle(this.baralho.getCartas());
 	}
-	
-	public Carta compraCartaBaralho () {
+
+	public Carta compraCartaBaralho() {
 		return this.baralho.getCartaRandom();
 	}
-	
-	public boolean isBaralhoVazio () {
+
+	public boolean isBaralhoVazio() {
 		return this.baralho.getCartas().isEmpty();
 	}
-	
-	public void criaCartaCheck () {
-		this.setCartaCheck(this.baralho.getCartaRandom());
+
+	public void criaCartaCheck() {
+		Carta cartaCheck = this.baralho.getCartas().get(baralho.getCartas().size() - 1);
+		this.baralho.getCartas().remove(cartaCheck);
+		this.setCartaCheck(cartaCheck);
 	}
-	
-	public List<Carta> distribuiCartas () {
+
+	public List<Carta> distribuiCartas() {
 		List<Carta> cartas = new ArrayList<Carta>();
-		
+
 		for (int i = 0; i < 5; i++) {
 			cartas.add(this.baralho.getCartaRandom());
 		}
-		
+
 		return cartas;
 	}
-	
-	public void distribuiCartasParaJogadores () {
+
+	public void distribuiCartasParaJogadores() {
 		this.jogadorUm.setCartasMao(this.distribuiCartas());
 		this.jogadorDois.setCartasMao(this.distribuiCartas());
 	}
 
 	public boolean verificarMaoJogadorParaComprar(Jogador jogador) {
-		return jogador.getCartasMao().size() < 5;
+		if (jogador.getNome().equals(getJogadorUm().getNome())) {
+            return getJogadorUm().getCartasMao().size() < 5;
+        } else {
+            return getJogadorDois().getCartasMao().size() < 5;
+        }
 	}
 
 	public void removeCartaBaralho(Carta carta) {
-		this.baralho.getCartas().remove(carta);
+		List<Carta> baralhoTemp = getBaralho().getCartas();
+        Carta atual;
+		
+        boolean achou = false;
+        int i = 0;
+        while (achou == false) {
+        	atual = baralhoTemp.get(i);
+        	if (atual.getCor().equals(carta.getCor()) && atual.getNumero() == carta.getNumero()
+            		&& atual.getNaipe().equals(carta.getNaipe())) {
+                baralhoTemp.remove(i);
+                achou = true;
+            }
+            i++;
+        }
 	}
 
-	public void adicionaCartaMaoJogador(Lance lance) {
-		lance.getJogador().getCartasMao().add(lance.getCarta());
+	public void adicionaCartaMaoJogador(Lance lance, Jogador jogando) {
+		if (jogando.getNome().equals(getJogadorUm().getNome())) {
+			getJogadorUm().getCartasMao().add(lance.getCarta());
+		} else {
+			getJogadorDois().getCartasMao().add(lance.getCarta());
+		}
 	}
-
+	
 	public void removeCartaMaoJogador(Lance lance) {
-		lance.getJogador().getCartasMao().remove(lance.getCarta());
-    	}
+        if (lance.getJogador().getNome().equals(this.getJogadorUm().getNome())) {
+            this.removeCartaJogador(getJogadorUm(), lance);
+        } else {
+            this.removeCartaJogador(getJogadorDois(), lance);
+        }
+    }
+    
+    public void removeCartaJogador(Jogador jogador, Lance lance) {
+        for (int i = 0; i < jogador.getCartasMao().size(); i++) {
+            Carta atual = jogador.getCartasMao().get(i);
+            if (atual.getCor().equals(lance.getCarta().getCor()) && atual.getNumero() == lance.getCarta().getNumero()
+            		&& atual.getNaipe().equals(lance.getCarta().getNaipe())) {
+                List<Carta> temporaria = jogador.getCartasMao();
+                temporaria.remove(i);
+                jogador.setCartasMao(temporaria);
+                temporaria = null;
+            }
+        }
+        System.out.println("Mesa.removeCartaJogador() após removê-las");
+        for (Carta carta : jogador.getCartasMao()) {
+        	System.out.println("Cada carta mão: " + carta.getNumero() + " " + carta.getCor() + " " + carta.getNaipe());
+			
+		}
+    }
 
 	public void addLance(Lance lance) {
 		this.rodadaAtual.addLance(lance);

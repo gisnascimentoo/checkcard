@@ -18,9 +18,8 @@ public class Baralho implements Jogada{
 	}
 	
 	public Carta getCartaRandom () {
-		Random rand = new Random();
-		int random = rand.nextInt(this.getCartas().size());
-		return this.getCartas().remove(random);
+		Random r = new Random();
+        return this.cartas.get(r.nextInt(cartas.size()));
 	}
 	
 	public void populaBaralho () {

@@ -18,7 +18,7 @@ public class ControladorMesa {
 	protected JMesa interfaceMesa;
 	protected boolean conectado;
 
-	public ControladorMesa (JMesa jMesa) {
+	public ControladorMesa(JMesa jMesa) {
 		this.rede = new AtorNetGames(this);
 		this.mesa = new Mesa();
 		this.interfaceMesa = jMesa;
@@ -90,64 +90,57 @@ public class ControladorMesa {
 	}
 
 	public void iniciarPartida() {
-		this.rede.iniciarPartida();
+		rede.iniciarPartida();
 
-		List<Jogador> jogadores = this.rede.getJogadores();
+		List<Jogador> jogadores = rede.getJogadores();
 
 		if (jogadores.size() == 2) {
-			this.mesa.setJogadores(jogadores);
-			this.criarJogadores(jogadores);
-			
+			mesa.setJogadores(jogadores);
+			mesa.criarJogadores();
+
 			this.iniciarNovaPartida();
 		}
 	}
 
 	private void iniciarNovaPartida() {
-		this.mesa.embaralhaBaralho();
-		this.mesa.distribuiCartasParaJogadores();
-		this.mesa.criaCartaCheck();
-		this.mesa.setStatusMesa(StatusMesa.INICAR_PARTIDA);
-		this.mesa.setJogadorDaVez(jogadorAtual);
-		this.mesa.iniciarRodada(jogadorAtual);
+		mesa.embaralhaBaralho();
+		mesa.distribuiCartasParaJogadores();
+		mesa.criaCartaCheck();
+		mesa.setStatusMesa(StatusMesa.INICAR_PARTIDA);
+		mesa.setJogadorDaVez(jogadorAtual);
+		mesa.iniciarRodada(jogadorAtual);
 		this.enviarJogada(mesa);
 		this.receberJogada(mesa);
-	}
-
-	public void criarJogadores(List<Jogador> jogadores) {
-		this.mesa.setJogadorUm(jogadores.get(0));
-		this.mesa.getJogadorUm().setId(1);
-
-		this.mesa.setJogadorDois(jogadores.get(1));
-		this.mesa.getJogadorDois().setId(2);
 	}
 
 	public void receberJogada(Jogada jogada) {
 		Jogador jogando = this.getMesa().getJogadorDaVez();
 		Carta carta = null;
-        Lance lance = null;
+		Lance lance = null;
 
-        if (jogada instanceof Mesa) {
-            this.mesa = (Mesa) jogada;
-            this.setJogadorAtualIniciarPartida(mesa);
-            this.interfaceMesa.recebeMesa(mesa);
-        } else if (jogada instanceof Lance) {
-        	lance = (Lance) jogada;
-        	if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
-	        	this.mesa.removeCartaBaralho(lance.getCarta());
-	        	this.mesa.adicionaCartaMaoJogador(lance);
-        	} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
-        		this.mesa.removeCartaMaoJogador(lance);
-        	}
-        	this.alterarJogadorDaVezNaMesa(jogando);
-            this.interfaceMesa.atualizaJogadorDaVez(mesa);
-            this.interfaceMesa.recebeLance(lance);
-            this.mesa.addLance(lance);
-        	this.verificarFimDaRodada();
-        }
- 	}
+		if (jogada instanceof Mesa) {
+			this.mesa = (Mesa) jogada;
+			this.setJogadorAtualIniciarPartida(mesa);
+			interfaceMesa.recebeMesa(mesa);
+		} else if (jogada instanceof Lance) {
+			lance = (Lance) jogada;
+			if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
+				mesa.removeCartaBaralho(lance.getCarta());
+				mesa.adicionaCartaMaoJogador(lance, jogando);
+				interfaceMesa.recebeLance(lance);
+			} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
+				mesa.removeCartaMaoJogador(lance);
+				interfaceMesa.recebeLance(lance);
+			}
+			alterarJogadorDaVezNaMesa(jogando);
+			interfaceMesa.atualizaJogadorDaVez(mesa);
+			mesa.addLance(lance);
+			this.verificarFimDaRodada();
+		}
+	}
 
 	public void enviarJogada(Jogada jogada) {
-		this.rede.enviarJogada(jogada);
+		rede.enviarJogada(jogada);
 	}
 
 	public void limparTodosCampos() {
@@ -166,6 +159,8 @@ public class ControladorMesa {
 				Lance lance = new Lance();
 				lance.setJogador(jogador);
 				lance.setCarta(this.mesa.compraCartaBaralho());
+				System.out.println("ControladorMesa.comprarCarta()");
+				System.out.println("Carta sendo comprada: " + lance.getCarta().getNumero() + " " + lance.getCarta().getCor() + " " + lance.getCarta().getNaipe());
 				lance.setTipoLance(Lance.TipoLance.COMPRAR_CARTA);
 
 				retorno = true;
@@ -204,49 +199,52 @@ public class ControladorMesa {
 
 	private void setJogadorAtualIniciarPartida(Mesa mesa) {
 		if (mesa.getStatusMesa().equals(StatusMesa.INICAR_PARTIDA)) {
-        		for (Jogador jog : mesa.getJogadores()) {
-                		if (jog.getNome().equals(jogadorAtual.getNome())) {
-                    			jogadorAtual = jog;
-                		}
-            		}
-        	}
+			for (Jogador jog : mesa.getJogadores()) {
+				if (jog.getNome().equals(jogadorAtual.getNome())) {
+					jogadorAtual = jog;
+				}
+			}
+		}
 	}
-	
+
 	public boolean chegouFimDaRodada() {
-        	return (this.mesa.getRodadaAtual() != null && this.mesa.getRodadaAtual().getQuantidadeLances() == 2);
-    	}
+		return (this.mesa.getRodadaAtual() != null && this.mesa.getRodadaAtual().getQuantidadeLances() == 2);
+	}
 
 	private void verificarFimDaRodada() {
 		if (this.chegouFimDaRodada()) {
 			this.computarPontos();
 			this.interfaceMesa.atualizarPontosJogadores(mesa);
-			
-			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
-            		this.interfaceMesa.recebeMesa(mesa);
-			
-            		this.enviarJogada(mesa);
-            		this.receberJogada(mesa);
-            
-            		this.verificarFimDaPartida();
+
+//			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
+			this.interfaceMesa.recebeMesa(mesa);
+
+			this.enviarJogada(mesa);
+			this.receberJogada(mesa);
+
+			this.verificarFimDaPartida();
 		}
 	}
 
+	//Corrigir
 	private void computarPontos() {
 		ArrayList<Lance> lancesDaRodada = new ArrayList<Lance>(this.mesa.getRodadaAtual().getLances());
 		int pontuacao;
 		Carta cartaDoLance;
-		
+
 		for (Lance lance : lancesDaRodada) {
 			pontuacao = lance.getJogador().getPontuacao();
 			if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
 				lance.getJogador().setPontuacao(pontuacao - 2);
 			} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
 				cartaDoLance = lance.getCarta();
-				if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero() || cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
-					lance.getJogador().setPontuacao(pontuacao + 2);
-				} else if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero() && cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
+				if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero()
+						&& cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
 					lance.getJogador().setPontuacao(pontuacao + 5);
-				} 
+				} else if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero()
+					|| cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
+				lance.getJogador().setPontuacao(pontuacao + 2);
+				}
 			}
 		}
 	}
@@ -257,7 +255,7 @@ public class ControladorMesa {
 			String vencedor;
 			int pontuacao;
 			boolean empate = false;
-			
+
 			if (jogadores.get(0).getPontuacao() > jogadores.get(1).getPontuacao()) {
 				vencedor = jogadores.get(0).getNome();
 				pontuacao = jogadores.get(0).getPontuacao();
@@ -269,7 +267,7 @@ public class ControladorMesa {
 				pontuacao = 20;
 				empate = true;
 			}
-			
+
 			this.exibeFimDeJogoInterface(vencedor, pontuacao, empate);
 		}
 	}
@@ -300,14 +298,5 @@ public class ControladorMesa {
 
 	private boolean isVezJogador(Jogador jogador) {
 		return jogador.getNome().equals(this.mesa.getJogadorDaVez().getNome());
-	}
-
-	private int compararCartaComCheckCard (Carta carta) {
-		if (carta.getNumero() == this.mesa.getCartaCheck().getNumero() || carta.getNaipe() == this.mesa.getCartaCheck().getNaipe()) {
-			return 2;
-		} else if (carta.getNumero() == this.mesa.getCartaCheck().getNumero() && carta.getNaipe() == this.mesa.getCartaCheck().getNaipe()) {
-			return 5;
-		}
-		return 0;
 	}
 }
