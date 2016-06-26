@@ -20,6 +20,8 @@ import model.Jogador;
 import model.Lance;
 import control.Mesa;
 import view.AtorJogador;
+import java.awt.Font;
+import java.awt.Color;
 
 public class JMesa extends javax.swing.JFrame {
     
@@ -71,15 +73,20 @@ public class JMesa extends javax.swing.JFrame {
 		Jogador jogadorAtual = atorJogador.getJogadorAtual();
         if (lance.getJogador().getNome().equals(jogadorAtual.getNome())) {
             this.jLabelCartaJogador.setIcon(lance.getCarta().getImage());
-        } else if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
-        	 ImageIcon image = new javax.swing.ImageIcon(getClass().getResource("/images/Atras.png"));
-        	 JLabel label = new JLabel(image);
-        	 jPanelAdversario.add(label);
         } else {
         	this.jLabelCartaAdversario.setIcon(lance.getCarta().getImage());
         	this.removeLabel(jPanelAdversario);
         }
         this.validate();
+	}
+
+	public void atualizaPanelAdversario(Lance lance) {
+		Jogador jogadorAtual = atorJogador.getJogadorAtual();
+		if (!lance.getJogador().getNome().equals(jogadorAtual.getNome())) {
+			ImageIcon image = new javax.swing.ImageIcon(getClass().getResource("/images/Atras.png"));
+			JLabel label = new JLabel(image);
+			jPanelAdversario.add(label);
+		}
 	}
 	
 	private void removeLabel(JPanel panel) {
@@ -154,7 +161,11 @@ public class JMesa extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Uma nova partida vai iniciar");
         }  else if (mesa.getStatusMesa().equals(StatusMesa.INICIAR_RODADA)) {
             this.iniciarNovaRodada(mesa);
-        } 
+            this.atualizarPontosJogadores(mesa);
+        } else if (mesa.getStatusMesa().equals(StatusMesa.ENCERRAR_PARTIDA)) {
+        	this.exibeMensagem(mesa.getMensagemFim());
+        	System.exit(0);
+        }
         this.atualizaJogadorDaVez(mesa);
         this.validate();
 	}
@@ -182,7 +193,7 @@ public class JMesa extends javax.swing.JFrame {
         this.atualizaCartasAdversarios(jogadorAtual);
         mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
         this.atualizaBaralho(mesa);
-        this.iniciarRodada(mesa);
+        this.iniciarNovaRodada(mesa);
     }
 
 	private void atualizaBaralho(Mesa mesa) {
@@ -285,14 +296,26 @@ public class JMesa extends javax.swing.JFrame {
         jLabelCartaAdversario = new javax.swing.JLabel();
         jPanelInfos = new javax.swing.JPanel();
         jLabelTextoPlacar = new javax.swing.JLabel();
+        jLabelTextoPlacar.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelTextoJogadorUm = new javax.swing.JLabel();
+        jLabelTextoJogadorUm.setForeground(Color.BLUE);
+        jLabelTextoJogadorUm.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelTextoJogadorDois = new javax.swing.JLabel();
+        jLabelTextoJogadorDois.setForeground(Color.RED);
+        jLabelTextoJogadorDois.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelValorJogadorUm = new javax.swing.JLabel();
+        jLabelValorJogadorUm.setForeground(Color.BLUE);
+        jLabelValorJogadorUm.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelValorJogadorDois = new javax.swing.JLabel();
+        jLabelValorJogadorDois.setForeground(Color.RED);
+        jLabelValorJogadorDois.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelTextoCheckCard = new javax.swing.JLabel();
+        jLabelTextoCheckCard.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelValorCheckCard = new javax.swing.JLabel();
         jLabelTextoJogadorDaVez = new javax.swing.JLabel();
+        jLabelTextoJogadorDaVez.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jLabelValorJogadorDaVez = new javax.swing.JLabel();
+        jLabelValorJogadorDaVez.setFont(new Font("Ubuntu Light", Font.BOLD, 14));
         jMenuBar = new javax.swing.JMenuBar();
         jMenu = new javax.swing.JMenu();
         jMenuItemConectar = new javax.swing.JMenuItem();

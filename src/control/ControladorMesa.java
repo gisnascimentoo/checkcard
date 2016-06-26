@@ -7,6 +7,7 @@ import br.ufsc.inf.leobr.cliente.Jogada;
 import model.Carta;
 import model.Jogador;
 import model.Lance;
+import model.TipoCarta;
 import rede.AtorNetGames;
 import view.JMesa;
 
@@ -127,7 +128,7 @@ public class ControladorMesa {
 			if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
 				mesa.removeCartaBaralho(lance.getCarta());
 				mesa.adicionaCartaMaoJogador(lance, jogando);
-				interfaceMesa.recebeLance(lance);
+				interfaceMesa.atualizaPanelAdversario(lance);
 			} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
 				mesa.removeCartaMaoJogador(lance);
 				interfaceMesa.recebeLance(lance);
@@ -159,8 +160,6 @@ public class ControladorMesa {
 				Lance lance = new Lance();
 				lance.setJogador(jogador);
 				lance.setCarta(this.mesa.compraCartaBaralho());
-				System.out.println("ControladorMesa.comprarCarta()");
-				System.out.println("Carta sendo comprada: " + lance.getCarta().getNumero() + " " + lance.getCarta().getCor() + " " + lance.getCarta().getNaipe());
 				lance.setTipoLance(Lance.TipoLance.COMPRAR_CARTA);
 
 				retorno = true;
@@ -216,7 +215,7 @@ public class ControladorMesa {
 			this.computarPontos();
 			this.interfaceMesa.atualizarPontosJogadores(mesa);
 
-//			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
+			this.mesa.setStatusMesa(StatusMesa.INICIAR_RODADA);
 			this.interfaceMesa.recebeMesa(mesa);
 
 			this.enviarJogada(mesa);
@@ -226,25 +225,29 @@ public class ControladorMesa {
 		}
 	}
 
-	//Corrigir
 	private void computarPontos() {
 		ArrayList<Lance> lancesDaRodada = new ArrayList<Lance>(this.mesa.getRodadaAtual().getLances());
-		int pontuacao;
-		Carta cartaDoLance;
 
 		for (Lance lance : lancesDaRodada) {
-			pontuacao = lance.getJogador().getPontuacao();
+			int valor = 0;
+			Carta cartaDoLance;
 			if (lance.getTipoLance().equals(Lance.TipoLance.COMPRAR_CARTA)) {
-				lance.getJogador().setPontuacao(pontuacao - 2);
+				valor = -3;
 			} else if (lance.getTipoLance().equals(Lance.TipoLance.JOGAR_CARTA)) {
 				cartaDoLance = lance.getCarta();
-				if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero()
-						&& cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
-					lance.getJogador().setPontuacao(pontuacao + 5);
-				} else if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero()
-					|| cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
-				lance.getJogador().setPontuacao(pontuacao + 2);
+				if (cartaDoLance.getNaipe().equals(TipoCarta.Naipe.JOKER)) {
+					valor = 5;
+				} else if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero() && cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
+					valor = 10;
+				} else if (cartaDoLance.getNumero() == this.mesa.getCartaCheck().getNumero() || cartaDoLance.getNaipe().equals(this.mesa.getCartaCheck().getNaipe())) {
+					valor = 5;
 				}
+			}
+			
+			if (lance.getJogador().getNome().equals(mesa.getJogadorUm().getNome())) {
+				mesa.getJogadorUm().setPontuacao(mesa.getJogadorUm().getPontuacao() + valor);
+			} else {
+				mesa.getJogadorDois().setPontuacao(mesa.getJogadorDois().getPontuacao() + valor);
 			}
 		}
 	}
@@ -260,8 +263,8 @@ public class ControladorMesa {
 				vencedor = jogadores.get(0).getNome();
 				pontuacao = jogadores.get(0).getPontuacao();
 			} else if (jogadores.get(0).getPontuacao() < jogadores.get(1).getPontuacao()) {
-				vencedor = jogadores.get(0).getNome();
-				pontuacao = jogadores.get(0).getPontuacao();
+				vencedor = jogadores.get(1).getNome();
+				pontuacao = jogadores.get(1).getPontuacao();
 			} else {
 				vencedor = "A partida terminou empatada.";
 				pontuacao = 20;
@@ -273,11 +276,19 @@ public class ControladorMesa {
 	}
 
 	private void exibeFimDeJogoInterface(String vencedor, int pontuacao, boolean empate) {
+		String mensagem = null;
 		if (empate == false) {
-			this.exibeMensagem("O jogador vencedor foi: " + vencedor + ", com pontuação: " + pontuacao);
+			mensagem = "O jogador vencedor foi: " + vencedor + ", com pontuação: " + pontuacao;
 		} else {
-			this.exibeMensagem(vencedor + "Com pontuação: " + pontuacao);
+			mensagem = vencedor + " com pontuação: " + pontuacao;
 		}
+		this.mesa.setMensagemFim(mensagem);
+		
+		this.mesa.setStatusMesa(StatusMesa.ENCERRAR_PARTIDA);
+		this.interfaceMesa.recebeMesa(mesa);
+		
+		this.enviarJogada(mesa);
+		this.receberJogada(mesa);
 	}
 
 	private void alterarJogadorDaVezNaMesa(Jogador jogador) {

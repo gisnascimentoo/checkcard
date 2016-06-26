@@ -25,6 +25,7 @@ public class Mesa implements Jogada {
 	protected Carta cartaCheck;
 	protected List<Rodada> rodadas;
 	protected Rodada rodadaAtual;
+	protected String mensagemFim;
 
 	public Mesa() {
 		this.baralho = new Baralho();
@@ -100,6 +101,14 @@ public class Mesa implements Jogada {
 
 	public void setRodadaAtual(Rodada rodadaAtual) {
 		this.rodadaAtual = rodadaAtual;
+	}
+
+	public String getMensagemFim() {
+		return mensagemFim;
+	}
+
+	public void setMensagemFim(String mensagemFim) {
+		this.mensagemFim = mensagemFim;
 	}
 
 	/** END: Getters e setters */
@@ -198,11 +207,6 @@ public class Mesa implements Jogada {
                 temporaria = null;
             }
         }
-        System.out.println("Mesa.removeCartaJogador() após removê-las");
-        for (Carta carta : jogador.getCartasMao()) {
-        	System.out.println("Cada carta mão: " + carta.getNumero() + " " + carta.getCor() + " " + carta.getNaipe());
-			
-		}
     }
 
 	public void addLance(Lance lance) {
@@ -217,7 +221,9 @@ public class Mesa implements Jogada {
 
 	public boolean acabouPartida() {
 		for (Jogador jogador : this.jogadores) {
-			return jogador.getPontuacao() >= 20;
+			if (jogador.getPontuacao() >= 20) {
+				return true;
+			}
 		}
 		return false;
 	}
